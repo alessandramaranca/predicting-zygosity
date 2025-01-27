@@ -4,7 +4,7 @@ import torch
 
 # Set Hugging Face access token
 import os
-os.environ["HF_HOME"] = "/path/to/cache"  # Optional: To set a custom cache location
+os.environ["HF_HOME"] = "/path/to/cache" 
 os.environ["HF_TOKEN"] = "add_your_token_here"
 
 # Load tokenizer and model
