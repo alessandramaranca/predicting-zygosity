@@ -6,7 +6,7 @@ import numpy as np
 file_path = "/home/ar0241/scratch/twins/twindat_sim_100k_24.csv"
 df = pd.read_csv(file_path)
 
-# Identify traits (assumes trait columns end with '.1' and '.2').
+# Identify traits (trait columns end with '.1' and '.2').
 traits = sorted(set(col[:-2] for col in df.columns if col.endswith('.1')))
 
 # For each trait, compute the combined sorted array and use it to vectorize percentile calculations.
