@@ -54,14 +54,6 @@ train_dataloader:
   batch_size: 8
   num_workers: 4
 
-eval_dataloader:
-  _component_: torchtune.datasets.instruct_dataset
-  source: "json"
-  data_files: "/home/ar0241/scratch/twins/ptwindat_val.json"
-  shuffle: false
-  batch_size: 8
-  num_workers: 4
-
 dataset:
   _component_: torchtune.datasets.instruct_dataset
   source: "json"
@@ -104,7 +96,7 @@ profiler:
   active_steps: 2
   num_cycles: 1
 
-# hf_token:   # add your Hugging Face access token
+hf_token: "add_token_here"  # Hugging Face access token
 seed: 1234
 shuffle: True
 batch_size: 4
