@@ -6,36 +6,24 @@ import numpy as np
 file_path = "/home/ar0241/scratch/twins/twindat_sim_100k_24.csv"
 df = pd.read_csv(file_path)
 
-# Identify traits (trait columns end with '.1' and '.2').
+# Identify traits (assumes trait columns end with '.1' and '.2').
 traits = sorted(set(col[:-2] for col in df.columns if col.endswith('.1')))
 
-# For each trait, compute the combined sorted array and use it to vectorize percentile calculations.
+# For each trait, compute the absolute difference between the twins.
 for trait in traits:
     col1 = trait + '.1'
     col2 = trait + '.2'
-
-    # Combine values from both twins and sort.
-    combined = np.concatenate([df[col1].values, df[col2].values])
-    sorted_arr = np.sort(combined)
-    n = len(sorted_arr)
-
-    # Compute percentiles using vectorized searchsorted.
-    twin1_vals = df[col1].values
-    twin2_vals = df[col2].values
-    p1 = np.searchsorted(sorted_arr, twin1_vals, side='right') / n
-    p2 = np.searchsorted(sorted_arr, twin2_vals, side='right') / n
-
-    # Compute the absolute difference between percentiles.
-    df[f"diff_{trait}"] = np.abs(p1 - p2)
-
+    # Compute the absolute difference between the raw values.
+    df[f"diff_{trait}"] = np.abs(df[col1] - df[col2])
+  
 # Create the instruct-format data.
-# Note: The "instruction" field is now set to an empty string.
 def row_to_instruct(row):
     input_lines = []
     for trait in traits:
         diff_val = row[f"diff_{trait}"]
-        input_lines.append(f"{trait}: Percentile Difference = {diff_val:.2f}")
-    input_text = "\n".join(input_lines)
+        input_lines.append(f"{trait} difference: {diff_val:.2f}")
+    # Join each trait difference with commas.
+    input_text = ", ".join(input_lines)
     # Output is "1" if monozygotic (zyg==1), else "0".
     output_text = "1" if row['zyg'] == 1 else "0"
     return {"instruction": "", "input": input_text, "output": output_text}
