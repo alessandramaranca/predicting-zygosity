@@ -1,12 +1,12 @@
-output_dir: /home/ar0241/scratch/twins/  # temporary files may be deleted by your system; change as needed.
+output_dir: /home/ar0241/scratch/twins/
 
 # Model Arguments
 model:
   _component_: torchtune.models.llama3_2.lora_llama3_2_1b
   lora_attn_modules: ['q_proj', 'v_proj', 'output_proj']
   apply_lora_to_mlp: True
-  lora_rank: 64             # higher increases accuracy and memory
-  lora_alpha: 128           # usually alpha=2*rank
+  lora_rank: 64
+  lora_alpha: 128
   lora_dropout: 0.0
 
 # Tokenizer
@@ -18,9 +18,7 @@ tokenizer:
 checkpointer:
   _component_: torchtune.training.FullModelHFCheckpointer
   checkpoint_dir: /home/ar0241/scratch/torchtune_models/Llama-3.2-1B-Instruct/
-  checkpoint_files: [
-     model.safetensors
-  ]
+  checkpoint_files: [model.safetensors]
   recipe_checkpoint: null
   output_dir: ${output_dir}
   model_type: LLAMA3_2
@@ -32,19 +30,21 @@ optimizer:
   _component_: torch.optim.AdamW
   fused: True
   weight_decay: 0.01
-  lr: 3e-4
+  lr: 1e-4  # Kept from previous suggestion
 lr_scheduler:
   _component_: torchtune.training.lr_schedulers.get_cosine_schedule_with_warmup
   num_warmup_steps: 100
 
+# Add label smoothing here:
 loss:
   _component_: torchtune.modules.loss.CEWithChunkedOutputLoss
+  label_smoothing: 0.1
 
 # Training
-epochs: 1
+epochs: 3
 max_steps_per_epoch: null
-gradient_accumulation_steps: 8  # Use to increase effective batch size
-compile: False                 # torch.compile the model + loss; True increases speed and decreases memory
+gradient_accumulation_steps: 8
+compile: False
 
 train_dataloader:
   _component_: torchtune.datasets.instruct_dataset
@@ -57,7 +57,7 @@ train_dataloader:
 dataset:
   _component_: torchtune.datasets.instruct_dataset
   source: "json"
-  data_files:  "/home/ar0241/scratch/twins/ptwindat_train.json"
+  data_files: "/home/ar0241/scratch/twins/ptwindat_train.json"
   description: "Twin zygosity prediction dataset formatted for instruction tuning with binary outputs"
 
 # Logging
@@ -68,7 +68,7 @@ log_every_n_steps: 1
 log_peak_memory_stats: True
 
 wandb:
-  api_key: "9d5d313579e3f51aecbf2f563fee7989c1b540b8"  # Your WandB API key
+  api_key: "9d5d313579e3f51aecbf2f563fee7989c1b540b8"
   project: "zygosity-twin-llama"
   entity: "llms-are-the-new-glms"
 
@@ -96,8 +96,9 @@ profiler:
   active_steps: 2
   num_cycles: 1
 
-hf_token: "add_token_here"  # Hugging Face access token
+hf_token: "token_here"
 seed: 1234
 shuffle: True
 batch_size: 4
+
 
