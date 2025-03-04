@@ -48,7 +48,10 @@ for example in eval_data:
 # Define candidate tokens for binary classification.
 candidates = ["1", "0"]
 # For single-token candidates, take the first token id.
-candidate_token_ids = {cand: tokenizer(cand, add_special_tokens=False)["input_ids"][0] for cand in candidates}
+candidate_token_ids = {
+    cand: tokenizer(cand, add_special_tokens=False)["input_ids"][0] 
+    for cand in candidates
+}
 
 predictions = []
 predicted_probs = []  # Predicted probability for candidate "1"
@@ -77,8 +80,6 @@ for prompt, target in tqdm(zip(prompts, targets), total=len(prompts), desc="Eval
         "1": cand1_prob / candidate_sum,
         "0": cand0_prob / candidate_sum
     }
-    # For reporting, set p_sum to 1 (since we normalized over the two candidates).
-    p_sum = 1.0
 
     predicted_probs.append(normalized_probs["1"])
     predicted_label = "1" if normalized_probs["1"] >= normalized_probs["0"] else "0"
@@ -98,7 +99,7 @@ for prompt, target in tqdm(zip(prompts, targets), total=len(prompts), desc="Eval
     detail = {
         "p(1)": normalized_probs["1"],
         "p(0)": normalized_probs["0"],
-        "p_sum": p_sum,
+        "p_sum": 1.0,  # Because we normalized over 2 candidates
         "top_candidate_probs": top_candidate_probs
     }
     additional_details.append(detail)
@@ -133,16 +134,24 @@ murphy_curve_filename = f"/home/ar0241/scratch/twins/{datetime.datetime.now().st
 plt.savefig(murphy_curve_filename)
 plt.close()
 
-# Compute and save evaluation loss per batch to CSV.
+# Compute average evaluation loss per batch and plot it.
 batch_size = 8
 batch_loss_data = []
 for i in range(0, len(losses), batch_size):
     batch_losses = losses[i:i+batch_size]
     avg_loss = sum(batch_losses) / len(batch_losses)
-    batch_loss_data.append({"batch": i // batch_size, "avg_loss": avg_loss})
-loss_csv_filename = f"/home/ar0241/scratch/twins/{datetime.datetime.now().strftime('%Y-%m-%d')}_eval_loss.csv"
-df_loss = pd.DataFrame(batch_loss_data)
-df_loss.to_csv(loss_csv_filename, index=False)
+    batch_loss_data.append(avg_loss)
+
+# Plot and save the evaluation loss figure.
+plt.figure(figsize=(8, 6))
+plt.plot(range(len(batch_loss_data)), batch_loss_data, marker='o', label='Evaluation Loss')
+plt.xlabel('Batch Index')
+plt.ylabel('Average Loss')
+plt.title('Evaluation Loss per Batch')
+plt.legend()
+eval_loss_fig_filename = f"/home/ar0241/scratch/twins/{datetime.datetime.now().strftime('%Y-%m-%d')}_eval_loss.png"
+plt.savefig(eval_loss_fig_filename)
+plt.close()
 
 # Save evaluation results to a text file with additional details.
 results_filename = f"/home/ar0241/scratch/twins/{datetime.datetime.now().strftime('%Y-%m-%d')}_evalresults.txt"
@@ -158,7 +167,7 @@ with open(results_filename, "w") as f:
     f.write(f"Brier Score: {brier:.4f}\n")
     f.write(f"AUC Score: {auc:.4f}\n")
     f.write(f"Murphy Curve saved to: {murphy_curve_filename}\n")
-    f.write(f"Evaluation Loss CSV saved to: {loss_csv_filename}\n\n")
+    f.write(f"Evaluation Loss figure saved to: {eval_loss_fig_filename}\n\n")
 
     # Record details for the first 5 examples.
     f.write("Example Details (first 5 examples):\n")
@@ -171,6 +180,7 @@ with open(results_filename, "w") as f:
         for j, prob in enumerate(detail["top_candidate_probs"]):
             f.write(f"    Choice {j+1}: {prob if isinstance(prob, str) else f'{prob:.4f}'}\n")
         f.write("\n")
+
 
 
 
