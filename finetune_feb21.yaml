@@ -35,10 +35,8 @@ lr_scheduler:
   _component_: torchtune.training.lr_schedulers.get_cosine_schedule_with_warmup
   num_warmup_steps: 100
 
-# Add label smoothing here:
 loss:
   _component_: torchtune.modules.loss.CEWithChunkedOutputLoss
-  label_smoothing: 0.1
 
 # Training
 epochs: 3
