@@ -18,10 +18,13 @@ from sklearn.metrics import (
 from sklearn.calibration import calibration_curve
 import matplotlib.pyplot as plt
 import pandas as pd
+import sys
 
 # Paths
-model_path = "/home/ar0241/scratch/torchtune_models/Llama-3.2-1B-Instruct"
-eval_dataset_path = "/home/ar0241/scratch/twins/ptwindat_eval.json"
+model_path = str(sys.argv[1]) or "/home/ar0241/scratch/torchtune_models/Llama-3.2-1B-Instruct"
+input_prefix = str(sys.argv[2]) or "/home/ar0241/scratch/twins/"
+output_prefix = str(sys.argv[3]) or "/home/ar0241/scratch/twins/"
+eval_dataset_path = f"{input_prefix}/ptwindat_eval.json"
 
 # Load tokenizer and model.
 tokenizer = AutoTokenizer.from_pretrained(model_path)
@@ -130,7 +133,7 @@ plt.xlabel("Mean predicted probability")
 plt.ylabel("Fraction of positives")
 plt.title("Calibration Curve (Murphy Curve)")
 plt.legend()
-murphy_curve_filename = f"/home/ar0241/scratch/twins/{datetime.datetime.now().strftime('%Y-%m-%d')}_murphy_curve.png"
+murphy_curve_filename = f"{output_prefix}/{datetime.datetime.now().strftime('%Y-%m-%d')}_murphy_curve.png"
 plt.savefig(murphy_curve_filename)
 plt.close()
 
@@ -149,12 +152,12 @@ plt.xlabel('Batch Index')
 plt.ylabel('Average Loss')
 plt.title('Evaluation Loss per Batch')
 plt.legend()
-eval_loss_fig_filename = f"/home/ar0241/scratch/twins/{datetime.datetime.now().strftime('%Y-%m-%d')}_eval_loss.png"
+eval_loss_fig_filename = f"{output_prefix}/{datetime.datetime.now().strftime('%Y-%m-%d')}_eval_loss.png"
 plt.savefig(eval_loss_fig_filename)
 plt.close()
 
 # Save evaluation results to a text file with additional details.
-results_filename = f"/home/ar0241/scratch/twins/{datetime.datetime.now().strftime('%Y-%m-%d')}_evalresults.txt"
+results_filename = f"{output_prefix}/{datetime.datetime.now().strftime('%Y-%m-%d')}_evalresults.txt"
 with open(results_filename, "w") as f:
     f.write(f"Accuracy: {accuracy * 100:.2f}%\n")
     f.write(f"Precision (Positive=1): {precision:.4f}\n")
@@ -180,8 +183,3 @@ with open(results_filename, "w") as f:
         for j, prob in enumerate(detail["top_candidate_probs"]):
             f.write(f"    Choice {j+1}: {prob if isinstance(prob, str) else f'{prob:.4f}'}\n")
         f.write("\n")
-
-
-
-
-                                                                                                                    83,1          Bot

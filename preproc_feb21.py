@@ -1,9 +1,12 @@
 import pandas as pd
 import json
 import numpy as np
+import sys
+
+folder = str(sys.argv[1]) or "/home/ar0241/scratch/twins/"
 
 # Load the CSV file.
-file_path = "/home/ar0241/scratch/twins/twindat_sim_100k_24.csv"
+file_path = f"{folder}twindat_sim_100k_24.csv"
 df = pd.read_csv(file_path)
 
 # Identify traits (assumes trait columns end with '.1' and '.2').
@@ -44,13 +47,13 @@ val_data = instruct_data[train_split:val_split]
 eval_data = instruct_data[val_split:]
 
 # Save the split datasets as JSON files.
-with open("/home/ar0241/scratch/twins/ptwindat_train.json", "w") as f:
+with open(f"{folder}ptwindat_train.json", "w") as f:
     json.dump(train_data, f, indent=4)
 
-with open("/home/ar0241/scratch/twins/ptwindat_val.json", "w") as f:
+with open(f"{folder}ptwindat_val.json", "w") as f:
     json.dump(val_data, f, indent=4)
 
-with open("/home/ar0241/scratch/twins/ptwindat_eval.json", "w") as f:
+with open(f"{folder}ptwindat_eval.json", "w") as f:
     json.dump(eval_data, f, indent=4)
 
 print("Saved train (80%), validation (10%), and evaluation (10%) datasets.")
