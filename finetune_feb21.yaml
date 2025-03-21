@@ -66,7 +66,7 @@ log_every_n_steps: 1
 log_peak_memory_stats: True
 
 wandb:
-  api_key: "9d5d313579e3f51aecbf2f563fee7989c1b540b8"
+  api_key: "key_here"
   project: "zygosity-twin-llama"
   entity: "llms-are-the-new-glms"
 
