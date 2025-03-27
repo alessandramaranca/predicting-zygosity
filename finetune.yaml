@@ -1,24 +1,33 @@
 # Before running, make sure to check the following:
-# - all the dirs at the top
+# - COMMON CONFIGS TO CHANGE (including dirs)
 # - correct model
-# - WandB project
-# - batch_size(s)
+# - lora
+
+# ----- COMMON CONFIGS TO CHANGE ----- #
+
+my_wandb_project: ""
+my_wandb_run_name: ""
+input_formatting: ""
 
 output_dir: /home/ar0241/scratch/twins/
 input_dir: /home/ar0241/scratch/twins/
 model_dir: /home/ar0241/scratch/torchtune_models/
 
-# output_dir: /home/niznik/scratch/zygosity_output_/
-# input_dir: /home/niznik/scratch/zyg_in/nd/
+# output_dir: /home/niznik/scratch/zygosity_output_${my_wandb_run_name}/
+# input_dir: /home/niznik/scratch/zyg_in/${input_formatting}/
 # model_dir: /home/niznik/scratch/torchtune_models/
+
+batch_size: 4
+
+# ----- END COMMON CONFIGS ----- #
 
 # Model Arguments
 model:
   _component_: torchtune.models.llama3_2.lora_llama3_2_1b
   lora_attn_modules: ['q_proj', 'v_proj', 'output_proj']
   apply_lora_to_mlp: True
-  lora_rank: 64
-  lora_alpha: 128
+  lora_rank: 8
+  lora_alpha: 16
   lora_dropout: 0.0
 
 # Tokenizer
@@ -54,7 +63,7 @@ loss:
 epochs: 1
 max_steps_per_epoch: null
 gradient_accumulation_steps: 8
-compile: False
+compile: True
 
 dataset:
   _component_: torchtune.datasets.instruct_dataset
@@ -67,7 +76,8 @@ dataset:
 metric_logger:
   _component_: torchtune.training.metric_logging.WandBLogger
   mode: "offline"
-  project: ""
+  project: ${my_wandb_project}
+  name: ${my_wandb_run_name}
   log_dir: ${output_dir}/logs
 log_every_n_steps: 5
 log_peak_memory_stats: True
@@ -99,6 +109,5 @@ profiler:
 hf_token: "token_here"
 seed: 1234
 shuffle: True
-batch_size: 4
 
 
