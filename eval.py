@@ -24,7 +24,8 @@ import sys
 model_path = str(sys.argv[1]) or "/home/ar0241/scratch/torchtune_models/Llama-3.2-1B-Instruct"
 input_prefix = str(sys.argv[2]) or "/home/ar0241/scratch/twins/"
 output_prefix = str(sys.argv[3]) or "/home/ar0241/scratch/twins/"
-eval_dataset_path = f"{input_prefix}/ptwindat_eval.json"
+dataset_suffix = str(sys.argv[4]) or ""
+eval_dataset_path = f"{input_prefix}/ptwindat_eval{dataset_suffix}.json"
 
 # Load tokenizer and model.
 tokenizer = AutoTokenizer.from_pretrained(model_path)
@@ -37,16 +38,25 @@ model.to(device)
 model.eval()
 
 # Load evaluation data.
+eval_data = []
 with open(eval_dataset_path, "r") as f:
-    eval_data = json.load(f)
+    if dataset_suffix == '_single':
+        eval_data = [json.loads(line) for line in f]
+    else:
+        eval_data = json.load(f)
 
 # Prepare lists.
 prompts = []
 targets = []
 for example in eval_data:
-    input_text = example["input"]
-    prompts.append(input_text)
-    targets.append(example["output"].strip())
+    if dataset_suffix == '_single':
+        input_text = example["text"]
+        prompts.append(input_text[:-1])
+        targets.append(input_text[-1])
+    else:
+        input_text = example["input"]
+        prompts.append(input_text)
+        targets.append(example["output"].strip())
 
 # Define candidate tokens for binary classification.
 candidates = ["1", "0"]
